@@ -66,6 +66,9 @@ export const customModelExamples: { [key: string]: CustomModel } = {
     bike_network: {
         priority: [{ if: 'bike_network == MISSING', multiply_by: '0.5' }],
     },
+    noisy_road_nearby: {
+        priority: [{"if": "noisy_road_nearby","multiply_by": "0.8"}],
+    },
     combined: {
         distance_influence: 100,
         speed: [{ if: 'road_class == TRACK || road_environment == FERRY || surface == DIRT', limit_to: '10' }],

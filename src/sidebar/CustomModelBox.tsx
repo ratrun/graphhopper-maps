@@ -139,6 +139,7 @@ export default function CustomModelBox({
                     <option value="limit_speed">{tr('limit_speed_example')}</option>
                     <option value="cargo_bike">{tr('cargo_bike_example')}</option>
                     <option value="bike_network">{tr('prefer_bike_network')}</option>
+                    <option value="noisy_road_nearby">{tr('avoid_noisy_road_nearby')}</option>
                     <option value="combined">{tr('combined_example')}</option>
                 </select>
 

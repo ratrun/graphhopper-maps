@@ -1,5 +1,13 @@
 import Api from '@/api/Api'
-import { ApiInfo, GeocodingResult, RoutingArgs, RoutingResult, RoutingResultInfo } from '@/api/graphhopper'
+import {
+    ApiInfo,
+    Bbox,
+    GeocodingResult,
+    ReverseGeocodingHit,
+    RoutingArgs,
+    RoutingResult,
+    RoutingResultInfo,
+} from '@/api/graphhopper'
 import QueryStore, { QueryPoint, QueryPointType, QueryStoreState, RequestState, SubRequest } from '@/stores/QueryStore'
 import {
     AddPoint,
@@ -12,6 +20,7 @@ import {
     SetPoint,
     SetVehicleProfile,
 } from '@/actions/Actions'
+import { POIAndQuery, POIQuery } from '@/pois/AddressParseResult'
 
 class ApiMock implements Api {
     private readonly callback: { (args: RoutingArgs): void }
@@ -21,6 +30,10 @@ class ApiMock implements Api {
     }
 
     geocode(query: string): Promise<GeocodingResult> {
+        throw Error('not implemented')
+    }
+
+    reverseGeocode(query: POIQuery, bbox: Bbox): Promise<ReverseGeocodingHit[]> {
         throw Error('not implemented')
     }
 
@@ -168,7 +181,7 @@ describe('QueryStore', () => {
             const newPointId = store.state.nextQueryPointId
             const atIndex = 1
 
-            const newState = store.reduce(store.state, new AddPoint(atIndex, { lat: 1, lng: 1 }, false))
+            const newState = store.reduce(store.state, new AddPoint(atIndex, { lat: 1, lng: 1 }, false, true))
 
             expect(newState.queryPoints.findIndex(p => p.id === newPointId)).toEqual(atIndex)
             expect(newState.queryPoints.every((p, i) => isCorrectType(p, i, newState.queryPoints.length))).toBeTruthy()
@@ -190,7 +203,7 @@ describe('QueryStore', () => {
                 routingProfile: { name: 'car' },
             }
 
-            const newState = store.reduce(state, new AddPoint(atIndex, { lat: 1, lng: 1 }, true))
+            const newState = store.reduce(state, new AddPoint(atIndex, { lat: 1, lng: 1 }, true, true))
             expect(newState.queryPoints.findIndex(p => p.id === newPointId)).toEqual(atIndex)
             expect(newState.queryPoints[atIndex].queryText).toEqual('1,1') // if initialized flag is set the coordinates are set as query text
             expect(counter).toEqual(1)

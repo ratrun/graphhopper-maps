@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import Dispatcher from '@/stores/Dispatcher'
 import styles from '@/sidebar/search/Search.module.css'
-import { getBBoxFromCoord, QueryPoint } from '@/stores/QueryStore'
+import { Coordinate, getBBoxFromCoord, QueryPoint } from '@/stores/QueryStore'
 import { AddPoint, ClearRoute, InvalidatePoint, MovePoint, RemovePoint, SetBBox, SetPoint } from '@/actions/Actions'
 import RemoveIcon from './minus-circle-solid.svg'
 import AddIcon from './plus-circle-solid.svg'
 import TargetIcon from './send.svg'
 import PlainButton from '@/PlainButton'
+import { Map } from 'ol'
 
 import AddressInput from '@/sidebar/search/AddressInput'
 import { MarkerComponent } from '@/map/Marker'
 import { tr } from '@/translation/Translation'
 import SettingsBox from '@/sidebar/SettingsBox'
 
-export default function Search({ points }: { points: QueryPoint[] }) {
+export default function Search({ points, map }: { points: QueryPoint[]; map: Map }) {
     const [showSettings, setShowSettings] = useState(false)
     const [showTargetIcons, setShowTargetIcons] = useState(true)
     const [moveStartIndex, onMoveStartSelect] = useState(-1)
@@ -40,6 +41,7 @@ export default function Search({ points }: { points: QueryPoint[] }) {
                         }}
                         dropPreviewIndex={dropPreviewIndex}
                         onDropPreviewSelect={onDropPreviewSelect}
+                        map={map}
                     />
                 ))}
             </div>
@@ -50,7 +52,7 @@ export default function Search({ points }: { points: QueryPoint[] }) {
                             ? { paddingTop: '2rem' }
                             : {}
                     }
-                    onClick={() => Dispatcher.dispatch(new AddPoint(points.length, { lat: 0, lng: 0 }, false))}
+                    onClick={() => Dispatcher.dispatch(new AddPoint(points.length, { lat: 0, lng: 0 }, false, true))}
                     className={styles.addSearchBox}
                 >
                     <AddIcon />
@@ -75,6 +77,7 @@ const SearchBox = ({
     onMoveStartSelect,
     dropPreviewIndex,
     onDropPreviewSelect,
+    map,
 }: {
     index: number
     points: QueryPoint[]
@@ -85,15 +88,9 @@ const SearchBox = ({
     onMoveStartSelect: (index: number, showTargetIcon: boolean) => void
     dropPreviewIndex: number
     onDropPreviewSelect: (index: number) => void
+    map: Map
 }) => {
     const point = points[index]
-
-    // With this ref and tabIndex=-1 we ensure that the first 'TAB' gives the focus the first input but the marker won't be included in the TAB sequence, #194
-    const myMarkerRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        if (index == 0) myMarkerRef.current?.focus()
-    }, [])
 
     function onClickOrDrop() {
         onDropPreviewSelect(-1)
@@ -109,8 +106,6 @@ const SearchBox = ({
         <>
             {(moveStartIndex < 0 || moveStartIndex == index) && (
                 <div
-                    ref={myMarkerRef}
-                    tabIndex={-1}
                     title={tr('drag_to_reorder')}
                     className={styles.markerContainer}
                     draggable
@@ -133,7 +128,7 @@ const SearchBox = ({
                     }}
                 >
                     <MarkerComponent
-                        number={index > 0 && index + 1 < points.length ? index : undefined}
+                        number={index > 0 && index + 1 < points.length ? '' + index : undefined}
                         cursor="ns-resize"
                         color={moveStartIndex >= 0 ? 'gray' : point.color}
                     />
@@ -162,6 +157,7 @@ const SearchBox = ({
 
             <div className={styles.searchBoxInput}>
                 <AddressInput
+                    map={map}
                     moveStartIndex={moveStartIndex}
                     dropPreviewIndex={dropPreviewIndex}
                     index={index}
@@ -170,7 +166,8 @@ const SearchBox = ({
                     onCancel={() => console.log('cancel')}
                     onAddressSelected={(queryText, coordinate) => {
                         const initCount = points.filter(p => p.isInitialized).length
-                        if (coordinate && initCount == 0) Dispatcher.dispatch(new SetBBox(getBBoxFromCoord(coordinate)))
+                        if (coordinate && initCount != points.length)
+                            Dispatcher.dispatch(new SetBBox(getBBoxFromCoord(coordinate)))
 
                         Dispatcher.dispatch(
                             new SetPoint(

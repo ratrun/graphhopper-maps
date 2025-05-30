@@ -1,7 +1,7 @@
 import { Feature, Map } from 'ol'
 import { Path } from '@/api/graphhopper'
 import { FeatureCollection } from 'geojson'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { GeoJSON } from 'ol/format'
@@ -15,24 +15,43 @@ import { SelectEvent } from 'ol/interaction/Select'
 import { QueryPoint } from '@/stores/QueryStore'
 import { distance } from 'ol/coordinate'
 import LineString from 'ol/geom/LineString'
+import Geometry from 'ol/geom/Geometry'
 
 const pathsLayerKey = 'pathsLayer'
 const selectedPathLayerKey = 'selectedPathLayer'
 const accessNetworkLayerKey = 'accessNetworkLayer'
 
 export default function usePathsLayer(map: Map, paths: Path[], selectedPath: Path, queryPoints: QueryPoint[]) {
-    useEffect(() => {
+  const [showPaths, setShowPaths] = useState(true)
+  useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+          if (e.key === 'm') setShowPaths(false)
+      }
+      const handleKeyUp = (e: KeyboardEvent) => {
+          if (e.key === 'm') setShowPaths(true)
+      }
+      window.addEventListener('keydown', handleKeyDown)
+      window.addEventListener('keyup', handleKeyUp)
+      return () => {
+          window.removeEventListener('keydown', handleKeyDown)
+          window.removeEventListener('keyup', handleKeyUp)
+      }
+  }, [])
+
+  useEffect(() => {
         removeCurrentPathLayers(map)
-        addUnselectedPathsLayer(
-            map,
-            paths.filter(p => p != selectedPath)
-        )
-        addSelectedPathsLayer(map, selectedPath)
-        addAccessNetworkLayer(map, selectedPath, queryPoints)
+        if (showPaths) {
+            addUnselectedPathsLayer(
+                map,
+                paths.filter(p => p != selectedPath)
+            )
+            addSelectedPathsLayer(map, selectedPath)
+            addAccessNetworkLayer(map, selectedPath, queryPoints)
+        }
         return () => {
             removeCurrentPathLayers(map)
         }
-    }, [map, paths, selectedPath])
+    }, [map, paths, selectedPath, showPaths])
 }
 
 function removeCurrentPathLayers(map: Map) {

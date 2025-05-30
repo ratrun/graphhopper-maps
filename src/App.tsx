@@ -93,7 +93,7 @@ export default function App() {
         onPOIsChanged()
 
         return () => {
-            getSettingsStore().register(onSettingsChanged)
+            getSettingsStore().deregister(onSettingsChanged)
             getQueryStore().deregister(onQueryChanged)
             getApiInfoStore().deregister(onInfoChanged)
             getRouteStore().deregister(onRouteChanged)
@@ -192,7 +192,7 @@ function LargeScreenLayout({ query, route, map, error, mapOptions, encodedValues
                                 drawAreas={drawAreas}
                             />
                         )}
-                        <Search points={query.queryPoints} map={map} />
+                        <Search points={query.queryPoints} profile={query.routingProfile} map={map} />
                         <div>{!error.isDismissed && <ErrorMessage error={error} />}</div>
                         <RoutingResults
                             info={route.routingResult.info}

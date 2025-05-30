@@ -135,23 +135,6 @@ const tfOutdoors: RasterStyle = {
         ', <a href="https://www.thunderforest.com/maps/outdoors/" target="_blank">Thunderforest Outdoors</a>',
     tilePixelRatio: tilePixelRatio,
 }
-const path = '/raster/styles/kurviger-liberty/{z}/{x}/{y}' + retina2x + '.png?key=' + kurvigerApiKey
-const kurviger: RasterStyle = {
-    name: 'Kurviger Liberty',
-    type: 'raster',
-    url: [
-        'https://a-tiles.mapilion.com' + path,
-        'https://b-tiles.mapilion.com' + path,
-        'https://c-tiles.mapilion.com' + path,
-        'https://d-tiles.mapilion.com' + path,
-        'https://e-tiles.mapilion.com' + path,
-    ],
-    attribution:
-        osmAttribution +
-        ',&copy; <a href="https://kurviger.de/" target="_blank">Kurviger</a> &copy; <a href="https://mapilion.com/attribution" target="_blank">Mapilion</a> <a href="http://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a>',
-    maxZoom: 22,
-    tilePixelRatio: tilePixelRatio,
-}
 const mapillion: VectorStyle = {
     name: 'Mapilion',
     type: 'vector',
@@ -159,13 +142,6 @@ const mapillion: VectorStyle = {
     attribution:
         osmAttribution +
         ', &copy; <a href="https://mapilion.com/attribution" target="_blank">Mapilion</a> <a href="http://www.openmaptiles.org/" target="_blank">&copy; OpenMapTiles</a>',
-}
-const lyrk: RasterStyle = {
-    name: 'Lyrk',
-    type: 'raster',
-    url: ['https://tiles.lyrk.org/lr/{z}/{x}/{y}?apikey=6e8cfef737a140e2a58c8122aaa26077'],
-    attribution: osmAttribution + ', <a href="https://geodienste.lyrk.de/">Lyrk</a>',
-    maxZoom: 15,
 }
 const wanderreitkarte: RasterStyle = {
     name: 'WanderReitKarte',
@@ -189,9 +165,7 @@ const styleOptions: StyleOption[] = [
     tfTransport,
     tfCycle,
     tfOutdoors,
-    kurviger,
     mapillion,
-    lyrk,
     wanderreitkarte,
 ]
 

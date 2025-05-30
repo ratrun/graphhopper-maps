@@ -17,8 +17,8 @@ import {
 import { LineString } from 'geojson'
 import { getTranslation, tr } from '@/translation/Translation'
 import * as config from 'config'
-import { Coordinate } from '@/stores/QueryStore'
 import { POIQuery } from '@/pois/AddressParseResult'
+import { Coordinate } from '@/utils'
 
 interface ApiProfile {
     name: string
@@ -292,6 +292,7 @@ export class ApiImpl implements Api {
         if (args.customModel) {
             request.custom_model = args.customModel
             request['ch.disable'] = true
+            request['timeout_ms'] = 10000
         }
 
         if (
@@ -302,6 +303,7 @@ export class ApiImpl implements Api {
         ) {
             return {
                 ...request,
+                timeout_ms: 10000,
                 'alternative_route.max_paths': args.maxAlternativeRoutes,
                 algorithm: 'alternative_route',
             }
@@ -443,7 +445,7 @@ export class ApiImpl implements Api {
 
     public static isMotorVehicle(profile: string) {
         return (
-            profile.includes('car') ||
+            (profile.includes('car') && !profile.includes('cargobike')) ||
             profile.includes('truck') ||
             profile.includes('scooter') ||
             profile.includes('bus') ||
@@ -453,26 +455,5 @@ export class ApiImpl implements Api {
 
     public static isTruck(profile: string) {
         return profile.includes('truck')
-    }
-
-    public static getBBoxPoints(points: Coordinate[]): Bbox | null {
-        const bbox: Bbox = points.reduce(
-            (res: Bbox, c) => [
-                Math.min(res[0], c.lng),
-                Math.min(res[1], c.lat),
-                Math.max(res[2], c.lng),
-                Math.max(res[3], c.lat),
-            ],
-            [180, 90, -180, -90] as Bbox
-        )
-        if (points.length == 1) {
-            bbox[0] = bbox[0] - 0.001
-            bbox[1] = bbox[1] - 0.001
-            bbox[2] = bbox[2] + 0.001
-            bbox[3] = bbox[3] + 0.001
-        }
-
-        // return null if the bbox is not valid, e.g. if no url points were given at all
-        return bbox[0] < bbox[2] && bbox[1] < bbox[3] ? bbox : null
     }
 }

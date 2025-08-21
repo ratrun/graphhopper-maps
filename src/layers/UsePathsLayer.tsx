@@ -1,10 +1,8 @@
 import { Feature, Map } from 'ol'
 import { Path } from '@/api/graphhopper'
-import { FeatureCollection } from 'geojson'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
-import { GeoJSON } from 'ol/format'
 import { Stroke, Style } from 'ol/style'
 import { fromLonLat } from 'ol/proj'
 import { Select } from 'ol/interaction'
@@ -15,35 +13,20 @@ import { SelectEvent } from 'ol/interaction/Select'
 import { QueryPoint } from '@/stores/QueryStore'
 import { distance } from 'ol/coordinate'
 import LineString from 'ol/geom/LineString'
-import Geometry from 'ol/geom/Geometry'
 
 const pathsLayerKey = 'pathsLayer'
 const selectedPathLayerKey = 'selectedPathLayer'
 const accessNetworkLayerKey = 'accessNetworkLayer'
 
 export default function usePathsLayer(map: Map, paths: Path[], selectedPath: Path, queryPoints: QueryPoint[]) {
-  const [showPaths, setShowPaths] = useState(true)
-  useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-          if (e.key === 'm') setShowPaths(false)
-      }
-      const handleKeyUp = (e: KeyboardEvent) => {
-          if (e.key === 'm') setShowPaths(true)
-      }
-      window.addEventListener('keydown', handleKeyDown)
-      window.addEventListener('keyup', handleKeyUp)
-      return () => {
-          window.removeEventListener('keydown', handleKeyDown)
-          window.removeEventListener('keyup', handleKeyUp)
-      }
-  }, [])
+    const [showPaths, setShowPaths] = useState(true)
 
-  useEffect(() => {
+    useEffect(() => {
         removeCurrentPathLayers(map)
         if (showPaths) {
             addUnselectedPathsLayer(
                 map,
-                paths.filter(p => p != selectedPath)
+                paths.filter(p => p != selectedPath),
             )
             addSelectedPathsLayer(map, selectedPath)
             addAccessNetworkLayer(map, selectedPath, queryPoints)
@@ -52,6 +35,27 @@ export default function usePathsLayer(map: Map, paths: Path[], selectedPath: Pat
             removeCurrentPathLayers(map)
         }
     }, [map, paths, selectedPath, showPaths])
+
+    useEffect(() => {
+        const target = map.getTargetElement()
+        if (!target) return
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'h') setShowPaths(false)
+        }
+
+        const handleKeyUp = (e: KeyboardEvent) => {
+            if (e.key === 'h') setShowPaths(true)
+        }
+
+        target.tabIndex = 0
+
+        target.addEventListener('keydown', handleKeyDown)
+        target.addEventListener('keyup', handleKeyUp)
+        return () => {
+            target.removeEventListener('keydown', handleKeyDown)
+            target.removeEventListener('keyup', handleKeyUp)
+        }
+    }, []) // run only once when component is initialized
 }
 
 function removeCurrentPathLayers(map: Map) {

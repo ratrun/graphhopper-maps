@@ -20,7 +20,6 @@ const accessNetworkLayerKey = 'accessNetworkLayer'
 
 export default function usePathsLayer(map: Map, paths: Path[], selectedPath: Path, queryPoints: QueryPoint[]) {
     const [showPaths, setShowPaths] = useState(true)
-
     useEffect(() => {
         removeCurrentPathLayers(map)
         if (showPaths) {
@@ -35,10 +34,7 @@ export default function usePathsLayer(map: Map, paths: Path[], selectedPath: Pat
             removeCurrentPathLayers(map)
         }
     }, [map, paths, selectedPath, showPaths])
-
     useEffect(() => {
-        const target = map.getTargetElement()
-        if (!target) return
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'h') setShowPaths(false)
         }
@@ -47,13 +43,16 @@ export default function usePathsLayer(map: Map, paths: Path[], selectedPath: Pat
             if (e.key === 'h') setShowPaths(true)
         }
 
-        target.tabIndex = 0
+        const viewport = map.getViewport()
+        if (!viewport) return
 
-        target.addEventListener('keydown', handleKeyDown)
-        target.addEventListener('keyup', handleKeyUp)
+        viewport.tabIndex = -1 // Make element focusable but not in tab order
+
+        viewport.addEventListener('keydown', handleKeyDown)
+        viewport.addEventListener('keyup', handleKeyUp)
         return () => {
-            target.removeEventListener('keydown', handleKeyDown)
-            target.removeEventListener('keyup', handleKeyUp)
+            viewport.removeEventListener('keydown', handleKeyDown)
+            viewport.removeEventListener('keyup', handleKeyUp)
         }
     }, []) // run only once when component is initialized
 }

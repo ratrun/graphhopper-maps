@@ -125,6 +125,7 @@ describe('route', () => {
                 'toll',
                 'track_type',
                 'country',
+                'time',
             ],
             point_hints: args.pointHints,
         }
@@ -170,6 +171,7 @@ describe('route', () => {
                 'toll',
                 'track_type',
                 'country',
+                'time',
             ],
             timeout_ms: 10000,
             'alternative_route.max_paths': args.maxAlternativeRoutes,
@@ -224,6 +226,7 @@ describe('route', () => {
                 'toll',
                 'track_type',
                 'country',
+                'time',
             ],
             custom_model: args.customModel!,
             'ch.disable': true,
@@ -337,6 +340,7 @@ describe('route', () => {
                 'toll',
                 'track_type',
                 'country',
+                'time',
             ],
         }
 

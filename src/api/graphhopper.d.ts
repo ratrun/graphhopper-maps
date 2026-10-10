@@ -123,6 +123,7 @@ interface Details {
     readonly cycleway: [number, number, string][]
     readonly sidewalk: [number, number, string][]
     readonly urban_density: [number, number, string][]
+    readonly time: [number, number, number][]
 }
 
 export interface TagHash {

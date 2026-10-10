@@ -675,11 +675,13 @@ function downloadGPX(path: Path, settings: Settings) {
 
     if (trk) {
         xmlString += '<trk>\n<name>GraphHopper Track</name><desc></desc>\n<trkseg>'
-        // TODO include time via path.details.time
-        xmlString += path.points.coordinates.reduce((prevString, coord) => {
+        const segmentTimes = addTrackTimes(path, path.points.coordinates)
+        xmlString += path.points.coordinates.reduce((prevString, coord, index) => {
             let trackPoint = '<trkpt '
             trackPoint += `lat="${coord[1].toFixed(6)}" lon="${coord[0].toFixed(6)}">`
             if (coord.length > 2) trackPoint += `<ele>${coord[2].toFixed(1)}</ele>`
+            const pointTime = segmentTimes[index]
+            if (pointTime) trackPoint += `<time>${pointTime.toISOString()}</time>`
             trackPoint += '</trkpt>\n'
             return prevString + trackPoint
         }, '')
@@ -696,6 +698,39 @@ function downloadGPX(path: Path, settings: Settings) {
         date.getUTCDate(),
     )}-${metersToTextForFile(path.distance, settings.showDistanceInMiles)}.gpx`
     tmpElement.click()
+}
+
+function addTrackTimes(path: Path, coordinates: Position[]) {
+    const trackPointTimes = new Array<Date | null>(coordinates.length).fill(null)
+    const timeDetails = path.details?.time
+    if (!timeDetails || timeDetails.length === 0 || coordinates.length === 0) return trackPointTimes
+
+    const routeStart = new Date()
+    let elapsedMs = 0
+    const sortedDetails = [...timeDetails].sort((a, b) => a[0] - b[0] || a[1] - b[1])
+
+    for (const [fromIndex, toIndex, segmentTime] of sortedDetails) {
+        const segmentStart = Math.max(0, fromIndex)
+        const segmentEnd = Math.min(coordinates.length - 1, toIndex)
+        if (segmentEnd <= segmentStart) {
+            elapsedMs += segmentTime
+            continue
+        }
+
+        for (let pointIndex = segmentStart; pointIndex <= segmentEnd; pointIndex++) {
+            const progress = segmentEnd === segmentStart ? 0 : (pointIndex - segmentStart) / (segmentEnd - segmentStart)
+            trackPointTimes[pointIndex] = new Date(routeStart.getTime() + elapsedMs + segmentTime * progress)
+        }
+        elapsedMs += segmentTime
+    }
+
+    for (let i = 0; i < trackPointTimes.length; i++) {
+        if (trackPointTimes[i] === null) {
+            trackPointTimes[i] = new Date(routeStart.getTime() + elapsedMs)
+        }
+    }
+
+    return trackPointTimes
 }
 
 function pad(value: number) {

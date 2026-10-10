@@ -279,6 +279,7 @@ export class ApiImpl implements Api {
         let details = config.request?.details ? config.request.details : []
         // don't query all path details for all profiles (e.g. foot_network and get_off_bike are not enabled for motor vehicles)
         if (profileConfig?.details) details = [...details, ...profileConfig.details] // don't modify original arrays!
+        if (!details.includes('time')) details = [...details, 'time']
 
         const request: RoutingRequest = {
             points: args.points,

@@ -55,6 +55,7 @@ export default class RouteStore extends Store<RouteStoreState> {
                 cycleway: [],
                 sidewalk: [],
                 urban_density: [],
+                time: [],
             },
             distance: 0,
             points_order: [],
